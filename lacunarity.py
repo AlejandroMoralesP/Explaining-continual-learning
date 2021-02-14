@@ -1,8 +1,16 @@
 import numpy as np
+from PIL import Image 
 import random
+import scipy.cluster.vq as scv
+import matplotlib.pyplot as plt
+from matplotlib import cm
+import csv
 
+red_count, orange_count, yellow_count, remainder_count = 0, 0, 0, 0
 
 def lacunarity(img, sz):
+
+    global red_count, orange_count, yellow_count, remainder_count
 
     count = 0
     if sz == 2:
@@ -16,65 +24,66 @@ def lacunarity(img, sz):
         for j in range(0,len(img[0]),sz):
             for k in range(i,i+sz,1):
                 for l in range(j,j+sz,1):
+                    color_counts(img[k][l])
                     if k == i:
                         if l == j:
-                            if img[k][l] != img[k][l+1]: count += 1
-                            if img[k][l] != img[k+1][l]: count += 1
-                            if img[k][l] != img[k+1][l+1]: count += 1
+                            if color_comparison(img[k][l], img[k][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l+1]): count += 1
                         elif l == j+sz-1:
-                            if img[k][l] != img[k][l-1]: count += 1
-                            if img[k][l] != img[k+1][l-1]: count += 1
-                            if img[k][l] != img[k+1][l]: count += 1
+                            if color_comparison(img[k][l], img[k][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l]): count += 1
                         elif sz > 2:
-                            if img[k][l] != img[k][l-1]: count += 1
-                            if img[k][l] != img[k+1][l-1]: count += 1
-                            if img[k][l] != img[k+1][l]: count += 1
-                            if img[k][l] != img[k+1][l+1]: count += 1
-                            if img[k][l] != img[k][l+1]: count += 1
+                            if color_comparison(img[k][l], img[k][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k][l+1]): count += 1
                     elif k == i+sz-1:
                         if l == j:
-                            if img[k][l] != img[k-1][l]: count += 1
-                            if img[k][l] != img[k-1][l+1]: count += 1
-                            if img[k][l] != img[k][l+1]: count += 1
+                            if color_comparison(img[k][l], img[k-1][l]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k][l+1]): count += 1
                         elif l == j+sz-1:
-                            if img[k][l] != img[k-1][l-1]: count += 1
-                            if img[k][l] != img[k-1][l]: count += 1
-                            if img[k][l] != img[k][l-1]: count += 1
+                            if color_comparison(img[k][l], img[k-1][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l]): count += 1
+                            if color_comparison(img[k][l], img[k][l-1]): count += 1
                         elif sz > 2:
-                            if img[k][l] != img[k][l-1]: count += 1
-                            if img[k][l] != img[k-1][l-1]: count += 1
-                            if img[k][l] != img[k-1][l]: count += 1
-                            if img[k][l] != img[k-1][l+1]: count += 1
-                            if img[k][l] != img[k][l+1]: count += 1
+                            if color_comparison(img[k][l], img[k][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k][l+1]): count += 1
                     elif sz > 2:
                         if l == j:
-                            if img[k][l] != img[k+1][l]: count += 1
-                            if img[k][l] != img[k+1][l+1]: count += 1
-                            if img[k][l] != img[k][l+1]: count += 1
-                            if img[k][l] != img[k-1][l+1]: count += 1
-                            if img[k][l] != img[k-1][l]: count += 1
+                            if color_comparison(img[k][l], img[k+1][l]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l]): count += 1
                         elif l == j+sz-1:
-                            if img[k][l] != img[k+1][l]: count += 1
-                            if img[k][l] != img[k+1][l-1]: count += 1
-                            if img[k][l] != img[k][l-1]: count += 1
-                            if img[k][l] != img[k-1][l-1]: count += 1
-                            if img[k][l] != img[k-1][l]: count += 1
+                            if color_comparison(img[k][l], img[k+1][l]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l]): count += 1
                         else:
-                            if img[k][l] != img[k-1][l-1]: count += 1
-                            if img[k][l] != img[k-1][l]: count += 1
-                            if img[k][l] != img[k-1][l+1]: count += 1
-                            if img[k][l] != img[k][l-1]: count += 1
-                            if img[k][l] != img[k][l+1]: count += 1
-                            if img[k][l] != img[k+1][l-1]: count += 1
-                            if img[k][l] != img[k+1][l]: count += 1
-                            if img[k][l] != img[k+1][l+1]: count += 1
+                            if color_comparison(img[k][l], img[k-1][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l]): count += 1
+                            if color_comparison(img[k][l], img[k-1][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k][l+1]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l-1]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l]): count += 1
+                            if color_comparison(img[k][l], img[k+1][l+1]): count += 1
 
-                        if sz > 2:
-                            for m in range(0,9):
-                                if count == m:
-                                    totals[m] = totals[m]+1
+                    if sz > 2:
+                        for m in range(0,9):
+                            if count == m:
+                                totals[m] = totals[m]+1
                             
-                            count = 0
+                        count = 0
             if sz == 2:
                 if count == 0:
                     totals[0] = totals[0]+1
@@ -90,34 +99,119 @@ def lacunarity(img, sz):
                 count = 0
 
     mult1, mult2, m1, m2 = 0, 0, 0, 0
-
+    
+    print('\nLacunarity with size {}x{}'.format(sz, sz))
+    print('------------------------------')
     if sz > 2:
         for i in range(0,9):
-            print("Squares with {} different neighbors: {}".format(i, totals[i]))
+            print("Square or pixel in the image with {} different neighbors: {}".format(i, totals[i]))
             mult1 += i * totals[i]
             mult2 += i**2 * totals[i]
         
-        m1 = (1/(sum( [ len(i) for i in img])/4)) * mult1
-        m2 = (1/(sum( [ len(i) for i in img])/4)) * mult2
+        m1 = (1/(len(img)*len(img))) * mult1
+        m2 = (1/(len(img)*len(img))) * mult2
 
     else:
-        m1 = (1/(sum( [ len(i) for i in img])/4))  * (0 * totals[0] + 6 * totals[1] + 8 * totals[2] + 10 * totals[3] + 12 * totals[4])
-        m2 = (1/(sum( [ len(i) for i in img])/4))  * (0**2 * totals[0] + 6**2 * totals[1] + 8**2 * totals[2] + 10**2 * totals[3] + 12**2 * totals[4])
+        for j in range(0,5):
+            if j == 0:
+                print("Squares(set of 4 pixels in the image) with {} different neighbors: {}".format(j, totals[j]))
+            else:
+                print("Squares(set of 4 pixels in the image) with {} different neighbors: {}".format((j+1)*2+2, totals[j]))
+        m1 = (1/(len(img)*len(img)/4)) * (0 * totals[0] + 6 * totals[1] + 8 * totals[2] + 10 * totals[3] + 12 * totals[4])
+        m2 = (1/(len(img)*len(img)/4)) * (0**2 * totals[0] + 6**2 * totals[1] + 8**2 * totals[2] + 10**2 * totals[3] + 12**2 * totals[4])
     
     lacunarity = m2/m1**2
-    print(lacunarity)
+    return lacunarity
 
-a = np.zeros(shape=(6,6))
 
-var = 0
-for i in range(len(a)):
-    for j in range(len(a[0])):
-        a[i][j] = random.randint(1,5)
-        print(a[i][j])
+def color_comparison(main, neighbor):
+
+    if main >= 0.86:
+        if neighbor < 0.86: return True
+        else: return False
+    elif main < 0.86 and main >= 0.75:
+        if neighbor >= 0.86 or neighbor < 0.75: return True
+        else: return False
+    elif main < 0.75 and main >= 0.55:
+        if neighbor >= 0.75 or neighbor < 0.55: return True
+        else: return False
+    else:
+        if neighbor >= 0.55: return True
+        else: return False
+
+
+def color_counts(main):
+    global red_count, orange_count, yellow_count, remainder_count
+
+    if main >= 0.86:
+        red_count += 1
+    elif main < 0.86 and main >= 0.75:
+        orange_count += 1
+    elif main < 0.75 and main >= 0.55:
+        yellow_count += 1
+    else:
+        remainder_count += 1
+
+
+def empty_globals():
+    global red_count, orange_count, yellow_count, remainder_count
+    red_count, orange_count, yellow_count, remainder_count = 0, 0, 0, 0
+
+
+# red >= 0.86
+# 0.86 > orange >= 0.75
+# 0.75 > yellow >= 0.55
+
+
+def colormap2arr(arr,cmap):    
+    # http://stackoverflow.com/questions/3720840/how-to-reverse-color-map-image-to-scalar-values/3722674#3722674
+    gradient=cmap(np.linspace(0.0,1.0,100))
+
+    # Reshape arr to something like (240*240, 4), all the 4-tuples in a long list...
+    arr2=arr.reshape((arr.shape[0]*arr.shape[1],arr.shape[2]))
     
-    print("")
+    # CHANGED: The image does not bring the alpha value and for this function it is needed
+    ones = np.ones(arr.shape[0]*arr.shape[1])
+    arr2 = np.column_stack((arr2, ones))
+
+    # Use vector quantization to shift the values in arr2 to the nearest point in
+    # the code book (gradient).
+    code,dist=scv.vq(arr2,gradient)
+
+    # code is an array of length arr2 (240*240), holding the code book index for
+    # each observation. (arr2 are the "observations".)
+    # Scale the values so they are from 0 to 1.
+    values=code.astype('float')/gradient.shape[0]
+
+    # Reshape values back to (240,240)
+    values=values.reshape(arr.shape[0],arr.shape[1])
+    values=values[::-1]
+    return values
 
 
-lacunarity(a, 2)
-lacunarity(a, 3)
+if __name__ == '__main__':
+    colors = plt.imread('../gradcam-library/0003.png')
+    print('Image: 0001.png')
+    example=colormap2arr(colors, cm.jet)
 
+    with open('Lacunarity_study.csv', 'a', newline='') as file:
+        lacu2 = lacunarity(example, 2)
+        lacu4 = lacunarity(example, 4)
+        empty_globals()
+        lacu7 = lacunarity(example, 8)
+    
+        pix_sum = red_count + orange_count + yellow_count + remainder_count
+
+        lacu2 = str(lacu2).replace('.', ',')
+        lacu4 = str(lacu4).replace('.', ',')
+        lacu7 = str(lacu7).replace('.', ',')
+        pix_sum = str(pix_sum).replace('.', ',')
+        red_pixels = str(red_count).replace('.', ',')
+        orange_pixels = str(orange_count).replace('.', ',')
+        yellow_pixels = str(yellow_count).replace('.', ',')
+        remainder_pixels = str(remainder_count).replace('.', ',')
+
+        writer = csv.writer(file)
+        # if i == 0:
+        writer.writerow(["Image", "2x2 Lacunarity", "4x4 Lacunarity", "8x8 Lacunarity", "Red pixels", "Orange pixels", "Yellow pixels", "Remainder pixels", "Pixel sum"])
+        writer.writerow(["0001.png", lacu2, lacu4, lacu7, red_pixels, orange_pixels, yellow_pixels, remainder_pixels, pix_sum])

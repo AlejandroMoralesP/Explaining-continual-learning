@@ -5,7 +5,9 @@ import scipy.cluster.vq as scv
 import matplotlib.pyplot as plt
 from matplotlib import cm
 import csv
+import pandas as pd
 
+NAME = 'ewc_task1_iteration5000'
 red_count, orange_count, yellow_count, remainder_count = 0, 0, 0, 0
 
 def lacunarity(img, sz):
@@ -120,7 +122,13 @@ def lacunarity(img, sz):
         m1 = (1/(len(img)*len(img)/4)) * (0 * totals[0] + 6 * totals[1] + 8 * totals[2] + 10 * totals[3] + 12 * totals[4])
         m2 = (1/(len(img)*len(img)/4)) * (0**2 * totals[0] + 6**2 * totals[1] + 8**2 * totals[2] + 10**2 * totals[3] + 12**2 * totals[4])
     
-    lacunarity = m2/m1**2
+    if m1 == 0:
+        lacunarity = m2
+    elif m2 == 0:
+        lacunarity = 0
+    else:
+        lacunarity = m2/m1**2
+
     return lacunarity
 
 
@@ -190,28 +198,58 @@ def colormap2arr(arr,cmap):
 
 
 if __name__ == '__main__':
-    colors = plt.imread('../gradcam-library/0003.png')
-    print('Image: 0001.png')
-    example=colormap2arr(colors, cm.jet)
+    col_list = ["Image", "Label", "Layer", "Prediction", "Heatmap", "Success"]
+    df = pd.read_csv("../gradcam-library/{}.csv".format(NAME), usecols=col_list)
+    ind = 0
+    header = False
+    for heatmap in df["Heatmap"]:
+        with open('Lacunarity_study_{}.csv'.format(NAME), 'a', newline='') as file:
+            writer = csv.writer(file)
 
-    with open('Lacunarity_study.csv', 'a', newline='') as file:
-        lacu2 = lacunarity(example, 2)
-        lacu4 = lacunarity(example, 4)
-        empty_globals()
-        lacu7 = lacunarity(example, 8)
-    
-        pix_sum = red_count + orange_count + yellow_count + remainder_count
+            if type(heatmap) == str:
+                colors = plt.imread('../gradcam-library/results/{}'.format(heatmap))
+                print('Image: {}'.format(heatmap))
+                example=colormap2arr(colors, cm.jet)
 
-        lacu2 = str(lacu2).replace('.', ',')
-        lacu4 = str(lacu4).replace('.', ',')
-        lacu7 = str(lacu7).replace('.', ',')
-        pix_sum = str(pix_sum).replace('.', ',')
-        red_pixels = str(red_count).replace('.', ',')
-        orange_pixels = str(orange_count).replace('.', ',')
-        yellow_pixels = str(yellow_count).replace('.', ',')
-        remainder_pixels = str(remainder_count).replace('.', ',')
+                lacu2 = lacunarity(example, 2)
+                lacu4 = lacunarity(example, 4)
+                empty_globals()
+                lacu8 = lacunarity(example, 8)
+            
+                pix_sum = red_count + orange_count + yellow_count + remainder_count
 
-        writer = csv.writer(file)
-        # if i == 0:
-        writer.writerow(["Image", "2x2 Lacunarity", "4x4 Lacunarity", "8x8 Lacunarity", "Red pixels", "Orange pixels", "Yellow pixels", "Remainder pixels", "Pixel sum"])
-        writer.writerow(["0001.png", lacu2, lacu4, lacu7, red_pixels, orange_pixels, yellow_pixels, remainder_pixels, pix_sum])
+                lacu2 = str(lacu2).replace('.', ',')
+                lacu4 = str(lacu4).replace('.', ',')
+                lacu8 = str(lacu8).replace('.', ',')
+                pix_sum = str(pix_sum).replace('.', ',')
+                red_pixels = str(red_count).replace('.', ',')
+                orange_pixels = str(orange_count).replace('.', ',')
+                yellow_pixels = str(yellow_count).replace('.', ',')
+                remainder_pixels = str(remainder_count).replace('.', ',')
+
+                label = heatmap.split("_")[0][4:]
+                prediction = heatmap.split("_")[-1].replace(".png","")
+
+                if label == prediction:
+                    success = True
+                else:
+                    success = False
+
+
+                if ind == 0 and header is False:
+                    header = True
+                    writer.writerow(["Image", "Prediction", "2x2 Lacunarity", "4x4 Lacunarity", "8x8 Lacunarity", "Red pixels", "Orange pixels", "Yellow pixels", "Remainder pixels", "Pixel sum"])
+
+                if ind > 0 and ind % 5 == 0:
+                    writer.writerow(["\n"])
+
+                writer.writerow(["{}".format(heatmap), success, lacu2, lacu4, lacu8, red_pixels, orange_pixels, yellow_pixels, remainder_pixels, pix_sum])
+                            
+                ind = ind + 1
+
+            else:
+                writer.writerow(["\n"])
+                writer.writerow(["\n"])
+                writer.writerow(["\n"])
+                writer.writerow(["\n"])
+            

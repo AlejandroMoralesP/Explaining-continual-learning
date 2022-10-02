@@ -5,6 +5,7 @@ from gradcam import GradCAM
 
 import os
 import torch
+import glob
 import csv
 
 from models.classifier import Classifier
@@ -12,13 +13,13 @@ from models.vae import AutoEncoder
 from define_models import init_params
 
 device = 'cpu'
-photos = [
-    'butterfly', #task1
-    'castle', #task3
-    'pear', #task4
-    ]
+# classes = [
+#     'butterfly', #task1
+#     'castle', #task3
+#     'pear', #task4
+#     ]
 
-id_fine = {26: 'apple',
+id_permutation = {26: 'apple',
 86: 'aquarium_fish',
 2: 'baby',
 55: 'bear',
@@ -119,7 +120,7 @@ id_fine = {26: 'apple',
 47: 'woman',
 44: 'worm'}
 
-NAME = ['ewc_task8_iteration5000of5000']
+# NAME = ['ewc_task10_iteration5000of5000']
 
 
 def load_checkpoint(model, model_dir, verbose=True, name=None, add_si_buffers=False):
@@ -171,17 +172,21 @@ def load_model(model_name):
 
 
 def gradcam_extractor():
-    # ind = 0
+    classes = glob.glob(os.path.join('./cifar100_png/train/', '*'))
+    model_names = glob.glob(os.path.join('./store/models/', '*.pt'))
+    
     name_cp = ''
-    for photo in photos:
-        for n in NAME:
-            if not os.path.exists('results/{}_{}'.format(photo, n)):
-                os.makedirs('results/{}_{}'.format(photo, n))
-                os.makedirs('results/{}_{}/heatmaps'.format(photo, n))
+    for clas in classes:
+        cla = clas[21:]
+        for nam in model_names:
+            n = nam[15:]
+            if not os.path.exists('results/{}_{}'.format(cla, n)):
+                os.makedirs('results/{}_{}'.format(cla, n))
+                os.makedirs('results/{}_{}/heatmaps'.format(cla, n))
             model = load_model(n)
-            load_checkpoint(model, './store/models', name='{}.pt'.format(n))
-            with open('results/{}_{}.csv'.format(photo, n), 'a', newline='') as file:
-                img_dir = './cifar100_png/test/{}'.format(photo)
+            load_checkpoint(model, './store/models', name=n)
+            with open('results/{}_{}.csv'.format(cla, n), 'a', newline='') as file:
+                img_dir = './cifar100_png/test/{}'.format(cla)
                 for img in range(1,101):
                     if img < 10:
                         img_name = '000{}.png'.format(img)
@@ -211,7 +216,7 @@ def gradcam_extractor():
                             model.eval()
                             target_layer = layer
                             gradcam = GradCAM(model, target_layer)
-                            print(model.name)
+                            # print(model.name)
                             mask, _ = gradcam(normed_torch_img)
                             heatmap, result = visualize_cam(mask, torch_img)
 
@@ -220,24 +225,24 @@ def gradcam_extractor():
                             pred = model(normed_torch_img)
 
                             layer_name = name.replace(".", "-")[6:]
-                            pred_name = id_fine[pred.argmax(dim=1).numpy()[0]]
-                            heatmap_name = '{}{}_{}_{}.png'.format(img_name.replace(".png", ""), photo, layer_name, pred_name)
+                            pred_name = id_permutation[pred.argmax(dim=1).numpy()[0]]
+                            heatmap_name = '{}{}_{}_{}.png'.format(img_name.replace(".png", ""), cla, layer_name, pred_name)
 
-                            im2.save('./results/{}_{}/heatmaps/{}'.format(photo, n, heatmap_name))
+                            im2.save('./results/{}_{}/heatmaps/{}'.format(cla, n, heatmap_name))
                             writer = csv.writer(file)
 
-                            if photo == pred_name:
+                            if cla == pred_name:
                                 success = True
                             else:
                                 success = False
                             
-                            if name_cp != '{}_{}.csv'.format(photo, n):
-                                name_cp = '{}_{}.csv'.format(photo, n)
+                            if name_cp != '{}_{}.csv'.format(cla, n):
+                                name_cp = '{}_{}.csv'.format(cla, n)
                                 writer.writerow(["Image", "Label", "Layer", "Prediction", "Heatmap", "Success"])
-                            writer.writerow([img_name, photo, layer_name, pred_name, heatmap_name, success])
+                            writer.writerow([img_name, cla, layer_name, pred_name, heatmap_name, success])
 
                             # ind = ind + 1
-                    print(pred.argmax(dim=1).numpy()[0])
+                    # print(pred.argmax(dim=1).numpy()[0])
                 writer.writerow(["\n"])
                 
 

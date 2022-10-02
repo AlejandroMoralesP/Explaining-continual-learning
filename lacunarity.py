@@ -7,6 +7,8 @@ import pandas as pd
 import glob
 import os.path
 
+import gradcam_extractor as ge
+
 red_count, orange_count, yellow_count, remainder_count = 0, 0, 0, 0
 
 def lacunarity(img, sz):
@@ -101,11 +103,11 @@ def lacunarity(img, sz):
 
     mult1, mult2, m1, m2 = 0, 0, 0, 0
     
-    print('\nLacunarity with size {}x{}'.format(sz, sz))
-    print('------------------------------')
+    # print('\nLacunarity with size {}x{}'.format(sz, sz))
+    # print('------------------------------')
     if sz > 2:
         for i in range(0,9):
-            print("Square or pixel in the image with {} different neighbors: {}".format(i, totals[i]))
+            # print("Square or pixel in the image with {} different neighbors: {}".format(i, totals[i]))
             mult1 += i * totals[i]
             mult2 += i**2 * totals[i]
         
@@ -113,11 +115,11 @@ def lacunarity(img, sz):
         m2 = (1/(len(img)*len(img))) * mult2
 
     else:
-        for j in range(0,5):
-            if j == 0:
-                print("Squares(set of 4 pixels in the image) with {} different neighbors: {}".format(j, totals[j]))
-            else:
-                print("Squares(set of 4 pixels in the image) with {} different neighbors: {}".format((j+1)*2+2, totals[j]))
+        # for j in range(0,5):
+        #     if j == 0:
+        #         print("Squares(set of 4 pixels in the image) with {} different neighbors: {}".format(j, totals[j]))
+        #     else:
+        #         print("Squares(set of 4 pixels in the image) with {} different neighbors: {}".format((j+1)*2+2, totals[j]))
         m1 = (1/(len(img)*len(img)/4)) * (0 * totals[0] + 6 * totals[1] + 8 * totals[2] + 10 * totals[3] + 12 * totals[4])
         m2 = (1/(len(img)*len(img)/4)) * (0**2 * totals[0] + 6**2 * totals[1] + 8**2 * totals[2] + 10**2 * totals[3] + 12**2 * totals[4])
     
@@ -197,6 +199,7 @@ def colormap2arr(arr,cmap):
 
 
 if __name__ == '__main__':
+    ge.gradcam_extractor()
 
     csv_files = glob.glob(os.path.join('./results/', '*.csv'))
     
@@ -211,7 +214,7 @@ if __name__ == '__main__':
 
                 if type(heatmap) == str:
                     colors = plt.imread('./results/{}/heatmaps/{}'.format(name[10:-4], heatmap))
-                    print('Image: {}'.format(heatmap))
+                    print('Image {} processed!'.format(heatmap))
                     example=colormap2arr(colors, cm.jet)
 
                     lacu2 = lacunarity(example, 2)

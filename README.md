@@ -17,7 +17,7 @@ pip install -r requirements.txt
 ```
 
 ## Brief explanation and running
-This job is in charge of extracting the Cifar100 classes that have a folder in `./cifar100_png/train` and once all the names of the classes have been obtained, it processes them to obtain an excel with data for each class and a heat map for each stored image in the folder. The extracted heat maps correspond to those of the sublayers of layer 3 and the sublayers of layer 5 of the aforementioned models. All this process is done by the `gradcam_extractor.py`.
+This code is in charge of extracting the Cifar100 classes that have a folder in `./cifar100_png/train` and once all the names of the classes have been obtained, it processes them to obtain an excel with data for each class and a heat map for each stored image in the folder. The extracted heat maps correspond to those of the sublayers of layer 3 and the sublayers of layer 5 of the aforementioned models. All this process is done by the `gradcam_extractor.py`.
 
 The part in which the Lacunarity developed by Juneau in 2015 and exposed in the work called Quantification of Heat Map Data Displays for High-Throughput Analysis is used, from the heat maps previously extracted with `gradcam_extractor.py`, lacunarities of different sliding window sizes (2x2, 4x4 and 8x8) and the number of pixels of the different established groups (red, orange, yellow and other pixels) are calculated and collected in another generated excel. What is exposed in this paragraph is executed by `lacunarity.py`.
 

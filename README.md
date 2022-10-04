@@ -5,7 +5,7 @@ This work has been designed to be executed based on certain models of the reposi
 * BI-R. Trained and tested with the configuration ```python ./main_cl.py --replay=generative --brain-inspired --scenario=task --experiment=CIFAR100 ```
 * EWC. Trained and tested with the configuration ```python ./main_cl.py --ewc --lambda=1000 --pre-convE --scenario=task --experiment=CIFAR100 ```
 
-In this link you can download all the images Cifar-100 and models used during the work: https://zenodo.org/record/7144881#.Yzyyb3bMJPY
+In this link you can download all the Cifar-100 images and models used during the work: https://zenodo.org/record/7144881#.Yzyyb3bMJPY
 
 Alejandro Morales Pérez
 
